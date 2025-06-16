@@ -1,7 +1,7 @@
 go:
-    version: 1.23
+    version: 1.24
 repository:
-    path: github.com/rebelmediausa/minecraft_exporter
+    path: github.com/rebelcore/minecraft_exporter
 build:
     binaries:
         - name: minecraft_exporter

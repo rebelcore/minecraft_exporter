@@ -15,7 +15,7 @@ package utils
 
 import (
 	"github.com/gorcon/rcon"
-	"github.com/rebelmediausa/minecraft_exporter/config"
+	"github.com/rebelcore/minecraft_exporter/config"
 )
 
 func GetRCON(command string) string {

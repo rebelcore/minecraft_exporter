@@ -1,1 +1,1 @@
-* Rebel Media <github+minecraft-exporter@rebelmedia.io> @rebelmediausa
+* Rebel Core <github+minecraft-exporter@rebelcore.org> @rebelcore

@@ -5,28 +5,30 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 jobs:
 
   Release:
-    name: Release
+    name: Create Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Create release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$tag" \
+          gh release create "${TAG}" \
               --repo="$GITHUB_REPOSITORY" \
-              --title="${tag#v} / $(date '+%Y-%m-%d')"
+              --title="${TAG#v} / $(date '+%Y-%m-%d')"
 
   Build:
-    name: Build
+    name: Build Release
     runs-on: ubuntu-latest
-    needs: [Release]
+    needs:
+      - 'Release'
     permissions:
       contents: read
     strategy:
@@ -47,9 +49,10 @@ jobs:
           thread: ${{ matrix.thread }}
 
   Publish:
-    name: Publish
+    name: Publish Release
     runs-on: ubuntu-latest
-    needs: [Build]
+    needs:
+      - 'Build'
     permissions:
       contents: write
       packages: write

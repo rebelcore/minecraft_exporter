@@ -1,10 +1,14 @@
 # Changelog
 
+## 1.0.2
 
-## 1.0.0
+* [ENHANCEMENT] Improve error handling
+* [CLEANUP] Mods upgrade
 
-Clean Up workflows to use Docker buildx
-Add auto tag
+## 1.0.1
+
+* [CLEANUP] Clean Up workflows to use Docker buildx
+* [ENHANCEMENT] Add auto tag
 
 ## 1.0.0
 

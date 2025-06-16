@@ -1,9 +1,9 @@
 # Minecraft exporter
 
-[![Test & Build](https://github.com/rebelmediausa/minecraft_exporter/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/rebelmediausa/minecraft_exporter/actions/workflows/test.yml)
-[![Current Release](https://img.shields.io/github/v/release/rebelmediausa/minecraft_exporter)](https://github.com/rebelmediausa/minecraft_exporter/releases/latest)
-[![Docker Pulls](https://img.shields.io/docker/pulls/rebelmediausa/minecraft-exporter)](https://hub.docker.com/r/rebelmediausa/minecraft-exporter)
-[![Go Report Card](https://goreportcard.com/badge/github.com/rebelmediausa/minecraft_exporter)](https://goreportcard.com/report/github.com/rebelmediausa/minecraft_exporter)
+[![Test & Build](https://github.com/rebelcore/minecraft_exporter/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/rebelcore/minecraft_exporter/actions/workflows/test.yml)
+[![Current Release](https://img.shields.io/github/v/release/rebelcore/minecraft_exporter)](https://github.com/rebelcore/minecraft_exporter/releases/latest)
+[![Docker Pulls](https://img.shields.io/docker/pulls/rebelcore/minecraft-exporter)](https://hub.docker.com/r/rebelcore/minecraft-exporter)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rebelcore/minecraft_exporter)](https://goreportcard.com/report/github.com/rebelcore/minecraft_exporter)
 
 Prometheus exporter for Minecraft metrics exposed
 in Go with pluggable metric collectors.
@@ -12,7 +12,7 @@ in Go with pluggable metric collectors.
 ## Installation and Usage
 
 If you are new to Prometheus and `minecraft_exporter` there is
-a [simple step-by-step guide](https://docs.rebelmedia.io/guides/minecraft/exporter).
+a [simple step-by-step guide](https://docs.rebelcore.org/guides/minecraft/exporter).
 
 The `minecraft_exporter` listens on HTTP port 9940 by default.
 See the `--help` output for more options.
@@ -33,7 +33,7 @@ need to set the RCON address flag to use the docker container hostname.
 ```bash
 docker run -d \
   -p 9940:9940 \
-  rebelmediausa/minecraft-exporter:latest \
+  rebelcore/minecraft-exporter:latest \
   --rcon.address=minecraft:25575
 ```
 
@@ -43,7 +43,7 @@ For Docker compose, similar flag changes are needed.
 ---
 services:
   minecraft_exporter:
-    image: rebelmediausa/minecraft-exporter:latest
+    image: rebelcore/minecraft-exporter:latest
     container_name: minecraft_exporter
     command:
       - '--rcon.address=minecraft:25575'
@@ -103,7 +103,7 @@ Prerequisites:
 
 Building:
 
-    git clone https://github.com/rebelmediausa/minecraft_exporter.git
+    git clone https://github.com/rebelcore/minecraft_exporter.git
     cd minecraft_exporter
     make build
     ./minecraft_exporter <flags>
