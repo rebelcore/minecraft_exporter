@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3
+
+* [ENHANCEMENT] Improve processing of players
+* [CLEANUP] Code clean up
+
 ## 1.0.2
 
 * [ENHANCEMENT] Improve error handling
