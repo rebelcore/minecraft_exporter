@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/rebelcore/minecraft_exporter/collector/utils"
 )
 
@@ -49,37 +50,54 @@ func NewPlayerCollector(logger *slog.Logger) (Collector, error) {
 }
 
 func getPlayerPosition(username string) []string {
-	rawData := utils.GetRCON(fmt.Sprintf("data get entity @p[name=%s] Pos", username))
-	// expect "has the following entity data: [x,y,z]"
-	filter := regexp.MustCompile(`has the following entity data: \[(.*)\]`)
+	rawData, err := utils.GetRCON(fmt.Sprintf("data get entity @p[name=%s] Pos", username))
+	if err != nil {
+		return []string{"0", "0", "0"}
+	}
+	filter := regexp.MustCompile(`has the following entity data:\s*\[([^\]]+)\]`)
 	matches := filter.FindStringSubmatch(rawData)
 	if len(matches) < 2 {
 		return []string{"0", "0", "0"}
 	}
-	coords := strings.Split(matches[1], ",")
-	if len(coords) < 3 {
-		return []string{"0", "0", "0"}
+	coordsRaw := strings.Split(matches[1], ",")
+	coords := make([]string, 3)
+	for i := 0; i < 3; i++ {
+		if i < len(coordsRaw) {
+			val := strings.TrimSpace(coordsRaw[i])
+			val = strings.TrimSuffix(val, "d")
+			coords[i] = val
+		} else {
+			coords[i] = "0"
+		}
 	}
 	return coords
 }
 
 func getPlayerDimension(username string) string {
-	rawData := utils.GetRCON(fmt.Sprintf("data get entity @p[name=%s] Dimension", username))
-	filter := regexp.MustCompile(`has the following entity data: \"(.*)\"`)
+	rawData, err := utils.GetRCON(fmt.Sprintf("data get entity @p[name=%s] Dimension", username))
+	if err != nil {
+		return "unknown"
+	}
+	// Match the dimension in quotes, e.g., "minecraft:overworld"
+	filter := regexp.MustCompile(`has the following entity data: "([^"]+)"`)
 	matches := filter.FindStringSubmatch(rawData)
 	if len(matches) < 2 {
 		return "unknown"
 	}
-	parts := strings.Split(matches[1], ":")
-	if len(parts) < 2 {
-		return matches[1]
+	dimFull := matches[1]
+	parts := strings.SplitN(dimFull, ":", 2)
+	if len(parts) == 2 {
+		return parts[1]
 	}
-	return parts[1]
+	return dimFull
 }
 
 func getPlayerXP(username string) string {
-	rawData := utils.GetRCON(fmt.Sprintf("data get entity @p[name=%s] XpLevel", username))
-	filter := regexp.MustCompile(`has the following entity data: (.*)`)
+	rawData, err := utils.GetRCON(fmt.Sprintf("data get entity @p[name=%s] XpLevel", username))
+	if err != nil {
+		return "0"
+	}
+	filter := regexp.MustCompile(`has the following entity data: (\d+)`)
 	matches := filter.FindStringSubmatch(rawData)
 	if len(matches) < 2 {
 		return "0"
@@ -94,13 +112,27 @@ func (c *playerCollector) Update(ch chan<- prometheus.Metric) error {
 		}
 	}()
 
-	rawList := utils.GetRCON("list")
-	playerFilter := regexp.MustCompile(`players online: (.*)`)
-	matches := playerFilter.FindStringSubmatch(rawList)
-	if len(matches) < 2 || len(strings.TrimSpace(matches[1])) == 0 {
-		return nil
+	rawList, err := utils.GetRCON("list")
+	if err != nil {
+		return err
 	}
-	players := strings.Split(strings.ReplaceAll(matches[1], " ", ""), ",")
+	playerFilter := regexp.MustCompile(`There are \d+ of a max of \d+ players online: ?(.*)`)
+
+	lines := strings.Split(rawList, "\n")
+
+	var players []string
+	for _, line := range lines {
+		match := playerFilter.FindStringSubmatch(line)
+		if len(match) > 1 && strings.TrimSpace(match[1]) != "" {
+			for _, p := range strings.Split(match[1], ",") {
+				name := strings.TrimSpace(p)
+				if name != "" {
+					players = append(players, name)
+				}
+			}
+			break // Found our line, can exit loop.
+		}
+	}
 
 	for _, player := range players {
 		c.logger.Debug("Minecraft user active", "username", player)
@@ -114,17 +146,19 @@ func (c *playerCollector) Update(ch chan<- prometheus.Metric) error {
 
 		xp := getPlayerXP(player)
 
-		ch <- prometheus.MustNewConstMetric(
-			c.playersOnline,
-			prometheus.GaugeValue,
-			1,
-			player,
-			dim,
-			x,
-			y,
-			z,
-			xp,
-		)
+		if dim != "unknown" {
+			ch <- prometheus.MustNewConstMetric(
+				c.playersOnline,
+				prometheus.GaugeValue,
+				1,
+				player,
+				dim,
+				x,
+				y,
+				z,
+				xp,
+			)
+		}
 	}
 
 	return nil
