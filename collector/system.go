@@ -20,6 +20,7 @@ import (
 	"log/slog"
 
 	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/rebelcore/minecraft_exporter/collector/utils"
 )
 
@@ -46,7 +47,10 @@ func NewSystemCollector(logger *slog.Logger) (Collector, error) {
 }
 
 func (c *systemCollector) Update(ch chan<- prometheus.Metric) error {
-	rawData := utils.GetRCON("help")
+	rawData, err := utils.GetRCON("help")
+	if err != nil {
+		return err
+	}
 	systemUpValue := 0
 	if rawData != "" {
 		systemUpValue = 1
