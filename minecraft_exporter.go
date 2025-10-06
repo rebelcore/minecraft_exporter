@@ -15,7 +15,6 @@ package main
 
 import (
 	"fmt"
-	"html"
 	"log/slog"
 	"net/http"
 	_ "net/http/pprof"
@@ -25,17 +24,17 @@ import (
 	"slices"
 	"sort"
 
-	"github.com/prometheus/common/promslog"
-	"github.com/prometheus/common/promslog/flag"
-
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	promcollectors "github.com/prometheus/client_golang/prometheus/collectors"
 	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/common/promslog"
+	"github.com/prometheus/common/promslog/flag"
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web"
 	"github.com/prometheus/exporter-toolkit/web/kingpinflag"
+
 	"github.com/rebelcore/minecraft_exporter/collector"
 )
 
@@ -83,8 +82,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if len(collects) > 0 && len(excludes) > 0 {
 		h.logger.Debug("rejecting combined collect and exclude queries")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Combined collect and exclude queries are not allowed."))
+		fmt.Fprintf(os.Stderr, "Combined collect and exclude queries are not allowed.")
 		return
 	}
 
@@ -102,8 +100,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	filteredHandler, err := h.innerHandler(*filters...)
 	if err != nil {
 		h.logger.Warn("Couldn't create filtered metrics handler:", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(fmt.Sprintf("Couldn't create filtered metrics handler: %s", html.EscapeString(err.Error()))))
+		fmt.Fprintf(os.Stderr, "Couldn't create filtered metrics handler: %s\n", err)
 		return
 	}
 	filteredHandler.ServeHTTP(w, r)

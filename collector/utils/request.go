@@ -15,25 +15,23 @@ package utils
 
 import (
 	"github.com/gorcon/rcon"
+
 	"github.com/rebelcore/minecraft_exporter/config"
 )
 
-func GetRCON(command string) string {
+func GetRCON(command string) (string, error) {
 	rconAddress, rconPassword := config.RCONInfo()
+
 	conn, err := rcon.Dial(rconAddress, rconPassword)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
-	defer func(conn *rcon.Conn) {
-		err := conn.Close()
-		if err != nil {
-			return
-		}
-	}(conn)
+	defer conn.Close()
+
 	response, err := conn.Execute(command)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
-	return response
+	return response, nil
 }
